@@ -54,3 +54,13 @@ Response:
 2. `Runtime → Change runtime type → T4 GPU`.
 3. `Runtime → Run all`. It takes about 20–30 min and downloads `cats_dogs_export.zip` at the end.
 4. Unzip it into `training/export/`.
+
+### Results (held-out test set, 2,341 images)
+
+| Model | Test accuracy | Training time (T4) |
+|---|---|---|
+| Baseline CNN (from scratch) | 91.46% | 11.4 min |
+| **MobileNetV2 (transfer learning + fine-tuning)** | **98.72%** | 6.2 min |
+
+![Training curves](training/export/figures/training_curves.png)
+![Confusion matrices](training/export/figures/confusion_matrices.png)
