@@ -1,0 +1,12 @@
+# Must match the versions used to train the model in Colab (see training/export/model_info.json)
+tensorflow==2.21.0
+keras==3.13.2
+
+flask
+flask-cors
+pymongo
+pillow
+python-dotenv
+
+# tests
+pytest

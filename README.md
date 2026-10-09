@@ -64,3 +64,35 @@ Response:
 
 ![Training curves](training/export/figures/training_curves.png)
 ![Confusion matrices](training/export/figures/confusion_matrices.png)
+
+## 2. Backend (Flask + MongoDB)
+
+Requires MongoDB running locally (`mongodb://localhost:27017`).
+
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python app.py
+```
+
+The API listens on `http://0.0.0.0:5000`. Other devices on the same Wi-Fi (the phone) reach it at `http://<your-PC-IP>:5000`.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/health` | Server, database and model status |
+| POST | `/api/predict` | Classify a base64 image (stores it in GridFS unless `"store": false`) |
+| GET | `/api/history?limit=20&client=web` | Latest stored predictions |
+| GET | `/api/predictions/<id>` | One prediction |
+| DELETE | `/api/predictions/<id>` | Delete a prediction and its image |
+| GET | `/api/images/<imageId>` | Original image bytes from GridFS |
+
+MongoDB layout (database `cats_dogs_vision`):
+- `images.files` / `images.chunks`: GridFS bucket with the original image bytes plus the client metadata.
+- `predictions`: one document per stored prediction (`metadata`, `image` info such as size and sha256, `prediction`, `createdAt`, `imageFileId`).
+
+Tests use the real model and a throwaway `cats_dogs_vision_test` database:
+```bash
+cd backend
+.venv\Scripts\python -m pytest -q
+```
