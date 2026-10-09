@@ -1,0 +1,24 @@
+{
+  "model_file": "cats_dogs_mobilenetv2.keras",
+  "img_size": 160,
+  "class_names": [
+    "Cat",
+    "Dog"
+  ],
+  "output": "single sigmoid unit = probability of class_names[1] (Dog)",
+  "input": "RGB float32 in [0, 255], bilinear resize to img_size; normalization is inside the model",
+  "test_accuracy": 0.9871849636907305,
+  "baseline_test_accuracy": 0.9145664246048697,
+  "train_minutes": {
+    "baseline": 11.4,
+    "transfer": 6.2
+  },
+  "dataset_sizes": {
+    "train": 18728,
+    "val": 2341,
+    "test": 2341
+  },
+  "tensorflow_version": "2.21.0",
+  "keras_version": "3.13.2",
+  "trained_at": "2026-10-09 17:24:35"
+}
