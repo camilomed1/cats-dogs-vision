@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+
+# Node / Expo
+node_modules/
+dist/
+.expo/
+web-build/
+
+# Dataset (downloaded by the notebook, never commit it)
+PetImages/
+*.zip
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
