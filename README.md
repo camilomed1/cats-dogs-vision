@@ -19,8 +19,8 @@ University computer-vision project: a cats vs dogs image classifier built with *
 | Folder | Description | Status |
 |---|---|---|
 | `training/` | Colab notebook: baseline CNN vs MobileNetV2 transfer learning | ✅ |
-| `backend/` | Flask API, base64 + metadata in, prediction out, images stored in GridFS | ⏳ |
-| `web/` | React (Vite) client: file upload + live webcam | ⏳ |
+| `backend/` | Flask API, base64 + metadata in, prediction out, images stored in GridFS | ✅ |
+| `web/` | React (Vite) client: file upload + live webcam | ✅ |
 | `desktop/` | Python PySide6 client: webcam (live) + files | ⏳ |
 | `mobile/` | React Native (Expo) client: camera + gallery | ⏳ |
 
@@ -90,6 +90,22 @@ The API listens on `http://0.0.0.0:5000`. Other devices on the same Wi-Fi (the p
 MongoDB layout (database `cats_dogs_vision`):
 - `images.files` / `images.chunks`: GridFS bucket with the original image bytes plus the client metadata.
 - `predictions`: one document per stored prediction (`metadata`, `image` info such as size and sha256, `prediction`, `createdAt`, `imageFileId`).
+
+## 3. Web client (React + Vite)
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Open http://localhost:5173 (the backend must be running). Vite forwards `/api/*` to `http://localhost:5000`.
+
+- **Upload**: drag and drop or pick one or more images. Each one is converted to base64 and sent with its metadata (filename, type, size, dimensions, last modified).
+- **Webcam**: *live prediction* classifies a frame about 3 times per second without saving it (`store: false`). *Snapshot & save* classifies one frame and stores it in MongoDB.
+- **History**: gallery of stored predictions from every client, with filters by client and label, a details view (metadata + GridFS info) and delete.
+
+### Backend tests
 
 Tests use the real model and a throwaway `cats_dogs_vision_test` database:
 ```bash
