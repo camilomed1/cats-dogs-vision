@@ -21,7 +21,7 @@ University computer-vision project: a cats vs dogs image classifier built with *
 | `training/` | Colab notebook: baseline CNN vs MobileNetV2 transfer learning | ✅ |
 | `backend/` | Flask API, base64 + metadata in, prediction out, images stored in GridFS | ✅ |
 | `web/` | React (Vite) client: file upload + live webcam | ✅ |
-| `desktop/` | Python PySide6 client: webcam (live) + files | ⏳ |
+| `desktop/` | Python PySide6 client: webcam (live) + files | ✅ |
 | `mobile/` | React Native (Expo) client: camera + gallery | ⏳ |
 
 ## API contract
@@ -104,6 +104,25 @@ Open http://localhost:5173 (the backend must be running). Vite forwards `/api/*`
 - **Upload**: drag and drop or pick one or more images. Each one is converted to base64 and sent with its metadata (filename, type, size, dimensions, last modified).
 - **Webcam**: *live prediction* classifies a frame about 3 times per second without saving it (`store: false`). *Snapshot & save* classifies one frame and stores it in MongoDB.
 - **History**: gallery of stored predictions from every client, with filters by client and label, a details view (metadata + GridFS info) and delete.
+
+## 4. Desktop client (Python + PySide6 + OpenCV)
+
+```powershell
+cd desktop
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python main.py
+```
+
+Optional: `.venv\Scripts\python main.py http://<server-ip>:5000` to use a backend on another machine (default `http://127.0.0.1:5000`).
+
+- **Upload**: "Choose images..." or drag and drop files into the window.
+- **Webcam**: pick the camera, *Start live prediction* (result drawn on the video, frames not stored) or *Snapshot and save*.
+- **History**: same data as the web client; double-click an image for metadata and GridFS details, or to delete it.
+
+All network calls run in background threads, so the window never freezes while waiting for the server.
+
+> Use `127.0.0.1` instead of `localhost` on Windows: `localhost` tries IPv6 first and adds about 2 s to every request.
 
 ### Backend tests
 
