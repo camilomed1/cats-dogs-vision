@@ -49,9 +49,8 @@ export default function UploadPanel() {
         onDragLeave={() => setDragging(false)}
         onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
       >
-        <div className="dropzone-icon">📁</div>
-        <p><strong>Drop images here</strong> or click to choose files</p>
-        <p className="muted">JPEG, PNG, BMP, GIF or WEBP · you can select several at once</p>
+        <p>Drop images here or click to choose files</p>
+        <p className="muted small">JPEG, PNG, BMP, GIF or WEBP. You can select several at once.</p>
         <input
           ref={inputRef}
           type="file"
@@ -73,11 +72,11 @@ export default function UploadPanel() {
         {items.map((it) => (
           <article key={it.key} className="card">
             <div className="thumb">
-              {it.previewUrl ? <img src={it.previewUrl} alt={it.name} /> : <div className="spinner" />}
+              {it.previewUrl && <img src={it.previewUrl} alt={it.name} />}
             </div>
             <div className="card-body">
               <p className="filename" title={it.name}>{it.name}</p>
-              {it.status === "loading" && <p className="muted">Classifying…</p>}
+              {it.status === "loading" && <p className="muted">Classifying...</p>}
               {it.status === "error" && <p className="error">{it.error}</p>}
               {it.status === "done" && <Prediction result={it.result} />}
             </div>
