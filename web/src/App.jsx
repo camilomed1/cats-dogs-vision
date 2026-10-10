@@ -27,16 +27,14 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <div>
-          <h1>🐾 Cats vs Dogs</h1>
-          <p className="subtitle">
-            MobileNetV2 transfer learning{acc ? ` · ${(acc * 100).toFixed(1)}% test accuracy` : ""}
-          </p>
-        </div>
-        <div className={`status ${online ? "ok" : "down"}`} title="Backend status">
-          <span className="dot" />
-          {health === null ? "Connecting…" : online ? (health.database ? "Server online" : "Server online · DB offline") : "Server offline"}
-        </div>
+        <h1>Cats vs Dogs Classifier</h1>
+        <p className="small">
+          Model: MobileNetV2{acc ? ` (${(acc * 100).toFixed(1)}% test accuracy)` : ""}
+          {" | "}Server:{" "}
+          <span className={online ? "ok" : "error"}>
+            {health === null ? "connecting..." : online ? (health.database ? "online" : "online, database offline") : "offline"}
+          </span>
+        </p>
       </header>
 
       <nav className="tabs">

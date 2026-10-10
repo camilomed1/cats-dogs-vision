@@ -51,13 +51,11 @@ export default function HistoryPanel() {
           <select value={label} onChange={(e) => setLabel(e.target.value)}>
             {LABELS.map((l) => <option key={l} value={l}>{l ? `Label: ${l}` : "All labels"}</option>)}
           </select>
-          <button onClick={load} disabled={loading}>{loading ? "Loading…" : "↻ Refresh"}</button>
+          <button onClick={load} disabled={loading}>{loading ? "Loading..." : "Refresh"}</button>
         </div>
-        <div className="stats">
-          <span className="chip cat">🐱 {count("cat")}</span>
-          <span className="chip dog">🐶 {count("dog")}</span>
-          <span className="chip uncertain">❓ {count("uncertain")}</span>
-        </div>
+        <span className="small">
+          Cats: {count("cat")} | Dogs: {count("dog")} | Uncertain: {count("uncertain")}
+        </span>
       </div>
 
       {error && <p className="error">{error}</p>}
@@ -74,7 +72,9 @@ export default function HistoryPanel() {
             <div className="card-body">
               <Prediction result={it} compact />
               <p className="muted small">
-                {it.metadata.client} · {it.metadata.source || "?"} · {new Date(it.createdAt).toLocaleString()}
+                {it.metadata.client} / {it.metadata.source || "?"}
+                <br />
+                {new Date(it.createdAt).toLocaleString()}
               </p>
             </div>
           </article>
@@ -92,7 +92,7 @@ export default function HistoryPanel() {
               <h4>Stored image (GridFS)</h4>
               <pre>{JSON.stringify({ imageId: selected.imageId, ...selected.image }, null, 2)}</pre>
               <div className="controls">
-                <button className="danger" onClick={() => remove(selected)}>Delete</button>
+                <button onClick={() => remove(selected)}>Delete</button>
                 <button onClick={() => setSelected(null)}>Close</button>
               </div>
             </div>

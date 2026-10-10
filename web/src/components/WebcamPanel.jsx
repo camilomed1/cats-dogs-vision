@@ -106,29 +106,26 @@ export default function WebcamPanel() {
         <div className="video-wrap">
           <video ref={videoRef} autoPlay playsInline muted className={stream ? "" : "hidden"} />
           {!stream && (
-            <div className="video-placeholder">
-              <div className="dropzone-icon">📷</div>
-              <p>Camera is off</p>
-            </div>
+            <div className="video-placeholder">Camera is off</div>
           )}
           {stream && live && result && (
             <div className="overlay">
               <Prediction result={result} compact />
             </div>
           )}
-          {stream && live && <span className="live-badge">● LIVE</span>}
+          {stream && live && <span className="live-badge">LIVE</span>}
         </div>
         <canvas ref={canvasRef} hidden />
 
         <div className="controls">
           {!stream ? (
-            <button className="primary" onClick={() => startCamera()}>Start camera</button>
+            <button onClick={() => startCamera()}>Start camera</button>
           ) : (
             <>
-              <button className={live ? "danger" : "primary"} onClick={() => setLive((v) => !v)}>
+              <button onClick={() => setLive((v) => !v)}>
                 {live ? "Stop live prediction" : "Start live prediction"}
               </button>
-              <button onClick={takeSnapshot} disabled={busy}>{busy ? "Saving…" : "📸 Snapshot & save"}</button>
+              <button onClick={takeSnapshot} disabled={busy}>{busy ? "Saving..." : "Snapshot and save"}</button>
               <button onClick={stopCamera}>Turn off camera</button>
               {devices.length > 1 && (
                 <select value={deviceId} onChange={(e) => { setDeviceId(e.target.value); startCamera(e.target.value); }}>
@@ -149,7 +146,7 @@ export default function WebcamPanel() {
           <>
             <Prediction result={result} />
             <p className="muted small">
-              {live && latency ? `Live · ${latency} ms per prediction · frames are not saved` : result.id ? "Saved to history" : ""}
+              {live && latency ? `Live: ${latency} ms per prediction. Frames are not saved.` : result.id ? "Saved to history." : ""}
             </p>
           </>
         ) : (
@@ -163,7 +160,7 @@ export default function WebcamPanel() {
               {snapshots.map((s, i) => (
                 <figure key={i}>
                   <img src={s.previewUrl} alt="snapshot" />
-                  <figcaption className={s.result.label}>
+                  <figcaption>
                     {s.result.label} {(s.result.confidence * 100).toFixed(0)}%
                   </figcaption>
                 </figure>
