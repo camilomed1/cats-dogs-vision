@@ -22,7 +22,7 @@ University computer-vision project: a cats vs dogs image classifier built with *
 | `backend/` | Flask API, base64 + metadata in, prediction out, images stored in GridFS | ✅ |
 | `web/` | React (Vite) client: file upload + live webcam | ✅ |
 | `desktop/` | Python PySide6 client: webcam (live) + files | ✅ |
-| `mobile/` | React Native (Expo) client: camera + gallery | ⏳ |
+| `mobile/` | React Native (Expo) client: camera + gallery | ✅ |
 
 ## API contract
 
@@ -123,6 +123,22 @@ Optional: `.venv\Scripts\python main.py http://<server-ip>:5000` to use a backen
 All network calls run in background threads, so the window never freezes while waiting for the server.
 
 > Use `127.0.0.1` instead of `localhost` on Windows: `localhost` tries IPv6 first and adds about 2 s to every request.
+
+## 5. Mobile client (React Native + Expo)
+
+Requirements: the **Expo Go** app on the phone, and the phone on the **same Wi-Fi** as the PC running the backend.
+
+```powershell
+cd mobile
+npm install
+npx expo start
+```
+
+Scan the QR code with the iPhone camera, which opens it in Expo Go. The app automatically uses the PC's IP for the API (`http://<PC-IP>:5000`); the address can be changed with the "Change" button in the header.
+
+- **Camera**: *Take photo and save* stores the photo; *Start live* classifies a silent low-quality photo about once per second without storing it; *Flip* switches cameras.
+- **Gallery**: pick a photo from the library (HEIC photos are converted to JPEG). Metadata includes EXIF date and camera model when available.
+- **History**: same data as the other clients, label filters, pull to refresh, tap for details and delete.
 
 ### Backend tests
 
