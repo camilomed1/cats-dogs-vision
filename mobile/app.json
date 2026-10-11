@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Cats vs Dogs",
+    "slug": "cats-dogs-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        { "cameraPermission": "The camera is used to take photos of cats and dogs to classify them." }
+      ],
+      [
+        "expo-image-picker",
+        { "photosPermission": "Your photos are used to classify cats and dogs." }
+      ]
+    ]
+  }
+}
