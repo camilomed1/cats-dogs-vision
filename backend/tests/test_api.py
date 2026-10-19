@@ -1,9 +1,10 @@
 """End-to-end API tests: real model + real local MongoDB (a throwaway test database).
 
-Test images are cropped from the notebook's test_predictions.png figure (held-out test images).
+Test images in tests/fixtures/ are held-out test images from the Kaggle dataset.
 Run with:  .venv\\Scripts\\python -m pytest -q
 """
 import base64
+import json
 import io
 import sys
 from pathlib import Path
@@ -17,15 +18,14 @@ from app import create_app  # noqa: E402
 from model_service import ModelService  # noqa: E402
 from storage import Storage  # noqa: E402
 
-FIGURE = config.MODEL_DIR / "figures" / "test_predictions.png"
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
 TEST_DB = "cats_dogs_vision_test"
 
-# (left, top) of 226px tiles in the 3x4 grid that the model got right with >= 99.8%
-TILES = {"cat": [(10, 110), (576, 654)], "dog": [(576, 110), (859, 110)]}
+TILES = {"cat": [FIXTURES / "cat_1.jpg", FIXTURES / "cat_2.jpg"], "dog": [FIXTURES / "dog_1.jpg", FIXTURES / "dog_2.jpg"]}
 
 
-def tile_b64(left, top, fmt="JPEG"):
-    img = Image.open(FIGURE).convert("RGB").crop((left + 4, top + 4, left + 222, top + 222))
+def tile_b64(path, fmt="JPEG"):
+    img = Image.open(path).convert("RGB")
     buf = io.BytesIO()
     img.save(buf, fmt)
     return base64.b64encode(buf.getvalue()).decode()
@@ -49,14 +49,15 @@ def client(storage):
 def test_health(client):
     body = client.get("/api/health").get_json()
     assert body["status"] == "ok" and body["database"] is True
-    assert body["model"]["img_size"] == 160
+    expected = json.loads((config.MODEL_DIR / "model_info.json").read_text())
+    assert body["model"]["img_size"] == expected["img_size"]
 
 
 @pytest.mark.parametrize("expected", ["cat", "dog"])
 def test_predicts_real_images(client, expected):
-    for left, top in TILES[expected]:
+    for path in TILES[expected]:
         r = client.post("/api/predict", json={
-            "image": tile_b64(left, top),
+            "image": tile_b64(path),
             "metadata": {"client": "web", "source": "file", "filename": f"{expected}.jpg"},
             "store": False,
         })
@@ -68,7 +69,7 @@ def test_predicts_real_images(client, expected):
 
 
 def test_store_history_image_delete_roundtrip(client):
-    b64 = tile_b64(*TILES["dog"][0], fmt="PNG")
+    b64 = tile_b64(TILES["dog"][0], fmt="PNG")
     r = client.post("/api/predict", json={
         "image": "data:image/png;base64," + b64,   # data URL prefix is accepted
         "metadata": {"client": "desktop", "source": "webcam", "capturedAt": "2026-10-09T12:00:00Z"},
@@ -93,7 +94,7 @@ def test_store_history_image_delete_roundtrip(client):
 
 def test_exif_rotation_is_applied(client):
     # A dog photo saved sideways with an EXIF "rotate 90" tag, like phones do.
-    img = Image.open(io.BytesIO(base64.b64decode(tile_b64(*TILES["dog"][1])))).rotate(90, expand=True)
+    img = Image.open(io.BytesIO(base64.b64decode(tile_b64(TILES["dog"][1])))).rotate(90, expand=True)
     exif = Image.Exif()
     exif[0x0112] = 6  # Orientation: rotate 90 CW to display
     buf = io.BytesIO()

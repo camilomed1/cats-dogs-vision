@@ -48,22 +48,26 @@ Response:
 ```
 `label` is `"uncertain"` when confidence is below the threshold. Live-mode frames are sent with `"store": false` so they are not saved.
 
-## 1. Training
+## 1. Training: comparison of 5 pretrained models
 
-1. Open `training/cats_vs_dogs_training.ipynb` in [Google Colab](https://colab.research.google.com/) (File → Upload notebook).
-2. `Runtime → Change runtime type → T4 GPU`.
-3. `Runtime → Run all`. It takes about 20–30 min and downloads `cats_dogs_export.zip` at the end.
-4. Unzip it into `training/export/`.
+`training/cats_vs_dogs_training.ipynb`:
 
-### Results (held-out test set, 2,341 images)
+1. Removes corrupted images and **balances the classes** (same number of cats and dogs).
+2. Splits the data **70% train / 15% validation / 15% test** and saves the splits as CSV files.
+3. Trains a **baseline CNN from scratch** and **5 pretrained ImageNet models** with transfer learning + fine-tuning:
+   ResNet50, DenseNet121, MobileNetV2, EfficientNetB0 and Xception.
+4. Uses callbacks: `ModelCheckpoint`, `EarlyStopping`, `ReduceLROnPlateau`, `CSVLogger`.
+5. Compares all models on the test set: accuracy, precision, recall, specificity, F1, AUC, confusion matrices,
+   ROC curves, size and inference time.
+6. Runs **5-fold cross-validation** on the best model (chosen by validation F1).
+7. Exports the best model with its normalization built in, so the backend works with any of the 5 architectures.
 
-| Model | Test accuracy | Training time (T4) |
-|---|---|---|
-| Baseline CNN (from scratch) | 91.46% | 11.4 min |
-| **MobileNetV2 (transfer learning + fine-tuning)** | **98.72%** | 6.2 min |
-
-![Training curves](training/export/figures/training_curves.png)
-![Confusion matrices](training/export/figures/confusion_matrices.png)
+How to run:
+1. Open the notebook in [Google Colab](https://colab.research.google.com/) (File → Upload notebook).
+2. `Runtime → Change runtime type → T4 GPU`, then `Runtime → Run all`, and allow Google Drive access.
+3. It takes about 2 hours. Progress is saved to `MyDrive/cats_dogs_vision/` after every model and every fold,
+   so if Colab disconnects, run all again and it continues where it stopped.
+4. At the end it downloads `cats_dogs_export.zip`. Replace the contents of `training/export/` with it.
 
 ## 2. Backend (Flask + MongoDB)
 

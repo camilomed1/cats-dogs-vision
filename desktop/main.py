@@ -73,7 +73,8 @@ class MainWindow(QMainWindow):
 
     def on_health(self, _, health):
         acc = health["model"].get("test_accuracy")
-        model = f"Model: MobileNetV2 ({acc * 100:.1f}% test accuracy)" if acc else "Model: MobileNetV2"
+        name = health["model"].get("architecture", "MobileNetV2")  # older model_info.json has no architecture
+        model = f"Model: {name} ({acc * 100:.1f}% test accuracy)" if acc else f"Model: {name}"
         db = "online" if health.get("database") else "online, database offline"
         self.status.setText(f"{model} | Server: <span style='color:green'>{db}</span> ({self.api.base_url})")
 

@@ -23,13 +23,14 @@ export default function App() {
 
   const online = health?.status === "ok";
   const acc = health?.model?.test_accuracy;
+  const architecture = health?.model?.architecture || "MobileNetV2";
 
   return (
     <div className="app">
       <header className="header">
         <h1>Cats vs Dogs Classifier</h1>
         <p className="small">
-          Model: MobileNetV2{acc ? ` (${(acc * 100).toFixed(1)}% test accuracy)` : ""}
+          Model: {architecture}{acc ? ` (${(acc * 100).toFixed(1)}% test accuracy)` : ""}
           {" | "}Server:{" "}
           <span className={online ? "ok" : "error"}>
             {health === null ? "connecting..." : online ? (health.database ? "online" : "online, database offline") : "offline"}
