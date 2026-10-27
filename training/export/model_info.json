@@ -1,24 +1,165 @@
 {
-  "model_file": "cats_dogs_mobilenetv2.keras",
-  "img_size": 160,
+  "model_file": "cats_dogs_model.keras",
+  "architecture": "EfficientNetB0",
+  "img_size": 180,
   "class_names": [
     "Cat",
     "Dog"
   ],
   "output": "single sigmoid unit = probability of class_names[1] (Dog)",
   "input": "RGB float32 in [0, 255], bilinear resize to img_size; normalization is inside the model",
-  "test_accuracy": 0.9871849636907305,
-  "baseline_test_accuracy": 0.9145664246048697,
-  "train_minutes": {
-    "baseline": 11.4,
-    "transfer": 6.2
+  "selection": "highest validation F1",
+  "test_accuracy": 0.9908623643632211,
+  "baseline_test_accuracy": 0.8812107367218732,
+  "test_metrics": {
+    "accuracy": 0.9908623643632211,
+    "precision": 0.9908623643632211,
+    "recall": 0.9908623643632211,
+    "specificity": 0.9908623643632211,
+    "f1": 0.9908623643632211,
+    "auc": 0.9996588389892893,
+    "tn": 1735,
+    "fp": 16,
+    "fn": 16,
+    "tp": 1735
   },
+  "validation_metrics": {
+    "accuracy": 0.9942857142857143,
+    "precision": 0.9937214611872146,
+    "recall": 0.9948571428571429,
+    "specificity": 0.9937142857142857,
+    "f1": 0.9942889777270131,
+    "auc": 0.999754612244898,
+    "tn": 1739,
+    "fp": 11,
+    "fn": 9,
+    "tp": 1741
+  },
+  "kfold": {
+    "k": 5,
+    "mean": {
+      "accuracy": 0.9908750467567107,
+      "precision": 0.9910326632655805,
+      "recall": 0.9907236205325916,
+      "specificity": 0.9910262940640606,
+      "f1": 0.9908749380953779,
+      "auc": 0.9992070638194555
+    },
+    "std": {
+      "accuracy": 0.001980605537906197,
+      "precision": 0.003355092250893991,
+      "recall": 0.002098541250450853,
+      "specificity": 0.00339001476176382,
+      "f1": 0.0019734136512433546,
+      "auc": 0.0006408657921098571
+    }
+  },
+  "comparison": [
+    {
+      "Model": "EfficientNetB0",
+      "Type": "pretrained (ImageNet)",
+      "Params (M)": 4.05,
+      "Size (MB)": 35.4,
+      "Train (min)": 6.8,
+      "Epochs": 10,
+      "Inference (ms)": 317.5,
+      "Val F1": 0.9942889777,
+      "Test accuracy": 0.9908623644,
+      "Test precision": 0.9908623644,
+      "Test recall": 0.9908623644,
+      "Test specificity": 0.9908623644,
+      "Test f1": 0.9908623644,
+      "Test auc": 0.999658839
+    },
+    {
+      "Model": "Xception",
+      "Type": "pretrained (ImageNet)",
+      "Params (M)": 20.86,
+      "Size (MB)": 151.1,
+      "Train (min)": 13.0,
+      "Epochs": 10,
+      "Inference (ms)": 134.7,
+      "Val F1": 0.9908623644,
+      "Test accuracy": 0.9902912621,
+      "Test precision": 0.9902912621,
+      "Test recall": 0.9902912621,
+      "Test specificity": 0.9902912621,
+      "Test f1": 0.9902912621,
+      "Test auc": 0.9993679063
+    },
+    {
+      "Model": "DenseNet121",
+      "Type": "pretrained (ImageNet)",
+      "Params (M)": 7.04,
+      "Size (MB)": 43.3,
+      "Train (min)": 12.4,
+      "Epochs": 10,
+      "Inference (ms)": 438.7,
+      "Val F1": 0.9905848787,
+      "Test accuracy": 0.9928612222,
+      "Test precision": 0.9931428571,
+      "Test recall": 0.992575671,
+      "Test specificity": 0.9931467733,
+      "Test f1": 0.9928591831,
+      "Test auc": 0.9997521201
+    },
+    {
+      "Model": "ResNet50",
+      "Type": "pretrained (ImageNet)",
+      "Params (M)": 23.59,
+      "Size (MB)": 214.7,
+      "Train (min)": 12.4,
+      "Epochs": 10,
+      "Inference (ms)": 222.2,
+      "Val F1": 0.9886039886,
+      "Test accuracy": 0.9902912621,
+      "Test precision": 0.9897318882,
+      "Test recall": 0.9908623644,
+      "Test specificity": 0.9897201599,
+      "Test f1": 0.9902968037,
+      "Test auc": 0.999476843
+    },
+    {
+      "Model": "MobileNetV2",
+      "Type": "pretrained (ImageNet)",
+      "Params (M)": 2.26,
+      "Size (MB)": 21.7,
+      "Train (min)": 5.5,
+      "Epochs": 10,
+      "Inference (ms)": 303.3,
+      "Val F1": 0.9874715262,
+      "Test accuracy": 0.987435751,
+      "Test precision": 0.9830220713,
+      "Test recall": 0.9920045688,
+      "Test specificity": 0.9828669332,
+      "Test f1": 0.9874928937,
+      "Test auc": 0.9993375736
+    },
+    {
+      "Model": "BaselineCNN",
+      "Type": "from scratch",
+      "Params (M)": 0.39,
+      "Size (MB)": 4.8,
+      "Train (min)": 15.7,
+      "Epochs": 19,
+      "Inference (ms)": 21.1,
+      "Val F1": 0.8836810517,
+      "Test accuracy": 0.8812107367,
+      "Test precision": 0.876905703,
+      "Test recall": 0.886921759,
+      "Test specificity": 0.8754997144,
+      "Test f1": 0.8818852924,
+      "Test auc": 0.9541748356
+    }
+  ],
   "dataset_sizes": {
-    "train": 18728,
-    "val": 2341,
-    "test": 2341
+    "train": 16336,
+    "val": 3500,
+    "test": 3502,
+    "per_class": 11669,
+    "balanced": true
   },
   "tensorflow_version": "2.21.0",
   "keras_version": "3.13.2",
-  "trained_at": "2026-10-09 17:24:35"
+  "trained_at": "2026-10-20 02:48:16"
 }

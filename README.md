@@ -69,6 +69,34 @@ How to run:
    so if Colab disconnects, run all again and it continues where it stopped.
 4. At the end it downloads `cats_dogs_export.zip`. Replace the contents of `training/export/` with it.
 
+### Results
+
+Balanced dataset: 11,669 images per class. Split: 16,336 train / 3,500 validation / 3,502 test.
+The best model is chosen by **validation F1**; the table shows the **test set** results.
+
+| Model | Type | Params (M) | Accuracy | Precision | Recall | Specificity | F1 | AUC | CPU inference* |
+|---|---|---|---|---|---|---|---|---|---|
+| **EfficientNetB0** (selected) | pretrained | 4.05 | **99.09%** | 99.09% | 99.09% | 99.09% | 99.09% | 0.9997 | 29 ms |
+| DenseNet121 | pretrained | 7.04 | 99.29% | 99.31% | 99.26% | 99.31% | 99.29% | 0.9998 | 63 ms |
+| Xception | pretrained | 20.86 | 99.03% | 99.03% | 99.03% | 99.03% | 99.03% | 0.9994 | 50 ms |
+| ResNet50 | pretrained | 23.59 | 99.03% | 98.97% | 99.09% | 98.97% | 99.03% | 0.9995 | 40 ms |
+| MobileNetV2 | pretrained | 2.26 | 98.74% | 98.30% | 99.20% | 98.29% | 98.75% | 0.9993 | 13 ms |
+| Baseline CNN | from scratch | 0.39 | 88.12% | 87.69% | 88.69% | 87.55% | 88.19% | 0.9542 | 5 ms |
+
+\* One image on the backend PC's CPU with a compiled graph (`tf.function`), measured outside the notebook.
+
+**5-fold cross-validation of EfficientNetB0** (train + validation data): accuracy **99.09% ± 0.20%**,
+F1 99.09% ± 0.20%, AUC 0.9992 ± 0.0006. The low deviation shows the result does not depend on the split.
+
+DenseNet121 scored slightly higher on the test set (+0.2%, 7 more images right), but the model is chosen with the
+validation set only; picking it by test score would make the test result optimistic.
+
+![Test metrics](training/export/figures/metrics_comparison.png)
+![Training curves](training/export/figures/training_curves.png)
+![Confusion matrices](training/export/figures/confusion_matrices.png)
+![ROC curves](training/export/figures/roc_curves_zoom.png)
+![K-fold](training/export/figures/kfold.png)
+
 ## 2. Backend (Flask + MongoDB)
 
 Requires MongoDB running locally (`mongodb://localhost:27017`).
