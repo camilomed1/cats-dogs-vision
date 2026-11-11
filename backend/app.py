@@ -13,6 +13,7 @@ from flask_cors import CORS
 
 import config
 from model_service import InvalidImageError, ModelService
+from mqtt_publisher import MqttPublisher
 from storage import Storage
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -54,7 +55,7 @@ def clean_metadata(value) -> dict:
     return metadata
 
 
-def create_app(model: ModelService, storage: Storage) -> Flask:
+def create_app(model: ModelService, storage: Storage, publisher: MqttPublisher | None = None) -> Flask:
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = config.MAX_IMAGE_MB * 1024 * 1024 * 4 // 3 + 64 * 1024  # base64 overhead
     CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -69,7 +70,8 @@ def create_app(model: ModelService, storage: Storage) -> Flask:
 
     @app.get("/api/health")
     def health():
-        return jsonify(status="ok", database=storage.ping(), threshold=model.threshold, model=model.info)
+        return jsonify(status="ok", database=storage.ping(), threshold=model.threshold, model=model.info,
+                       mqtt=publisher.status() if publisher else {"enabled": False})
 
     @app.post("/api/predict")
     def predict():
@@ -95,6 +97,8 @@ def create_app(model: ModelService, storage: Storage) -> Flask:
             try:
                 result["id"], image_id = storage.save(image_bytes, mime, metadata, image_info, prediction)
                 result["imageUrl"] = f"/api/images/{image_id}"
+                if publisher:  # notify IoT devices (ESP32) about the new stored prediction
+                    publisher.publish_prediction(result["id"], prediction, metadata)
             except Exception as e:  # prediction still works if MongoDB is down
                 log.exception("Could not store prediction")
                 result["storageError"] = str(e)
@@ -134,6 +138,10 @@ def create_app(model: ModelService, storage: Storage) -> Flask:
 
 if __name__ == "__main__":
     log.info("Loading model from %s ...", config.MODEL_DIR)
+    publisher = MqttPublisher(config.MQTT_HOST, config.MQTT_PORT, config.MQTT_PREFIX, config.MQTT_ENABLED)
     app = create_app(ModelService(config.MODEL_DIR, config.UNCERTAIN_THRESHOLD),
-                     Storage(config.MONGO_URI, config.MONGO_DB))
-    app.run(host=config.HOST, port=config.PORT, threaded=True)
+                     Storage(config.MONGO_URI, config.MONGO_DB), publisher)
+    try:
+        app.run(host=config.HOST, port=config.PORT, threaded=True)
+    finally:
+        publisher.close()

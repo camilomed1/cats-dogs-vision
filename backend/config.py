@@ -17,3 +17,11 @@ MAX_IMAGE_MB = int(os.getenv("MAX_IMAGE_MB", "15"))
 
 HOST = os.getenv("HOST", "0.0.0.0")  # 0.0.0.0 so the phone can reach it over Wi-Fi
 PORT = int(os.getenv("PORT", "5000"))
+
+# MQTT: every stored prediction is published to MQTT_PREFIX/prediction (see mqtt_publisher.py).
+# broker.emqx.io is public: anyone who knows the prefix can read the messages, so only small JSON
+# (label, confidence, ids) is sent, never images. Use MQTT_HOST=localhost for a local Mosquitto.
+MQTT_ENABLED = os.getenv("MQTT_ENABLED", "true").lower() == "true"
+MQTT_HOST = os.getenv("MQTT_HOST", "broker.emqx.io")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+MQTT_PREFIX = os.getenv("MQTT_PREFIX", "catsdogs-vision/camilomed1")

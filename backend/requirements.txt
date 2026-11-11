@@ -7,6 +7,7 @@ flask-cors
 pymongo
 pillow
 python-dotenv
+paho-mqtt
 
 # tests
 pytest

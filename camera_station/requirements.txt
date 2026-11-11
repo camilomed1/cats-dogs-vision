@@ -4,3 +4,4 @@ flask-cors
 requests
 python-dotenv
 numpy
+paho-mqtt

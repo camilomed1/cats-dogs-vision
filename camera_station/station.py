@@ -7,19 +7,23 @@
   one snapshot to MongoDB (a "detection event").
 - Serves the labeled video as MJPEG, like the professor's Tapo example, so a browser can show it
   with <img src="http://<pc>:5001/video">.
+- Listens on MQTT topic PREFIX/command: {"command": "SNAPSHOT"} (e.g. from the ESP32 button) saves the current frame.
 
 Run:  .venv\\Scripts\\python station.py      (settings in .env, see .env.example)
 """
 import base64
+import json
 import os
 import re
 import threading
 import time
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
 import cv2
+import paho.mqtt.client as mqtt
 import requests
 from dotenv import load_dotenv
 from flask import Flask, Response, jsonify
@@ -36,6 +40,11 @@ PREDICT_EVERY_S = float(os.getenv("PREDICT_EVERY_S", "0.3"))    # pause between 
 EVENT_FRAMES = int(os.getenv("EVENT_FRAMES", "3"))              # consecutive frames needed for an event
 EVENT_CONFIDENCE = float(os.getenv("EVENT_CONFIDENCE", "0.90"))  # minimum confidence for those frames
 EVENT_COOLDOWN_S = float(os.getenv("EVENT_COOLDOWN_S", "15"))    # minimum time between events of the same animal
+
+MQTT_ENABLED = os.getenv("MQTT_ENABLED", "true").lower() == "true"
+MQTT_HOST = os.getenv("MQTT_HOST", "broker.emqx.io")
+MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
+MQTT_PREFIX = os.getenv("MQTT_PREFIX", "catsdogs-vision/camilomed1").rstrip("/")
 
 IS_FILE = os.path.isfile(CAMERA_URL)
 NAMES = {"cat": "Cat", "dog": "Dog", "uncertain": "Uncertain"}
@@ -117,6 +126,7 @@ class Station:
         self.last_event_at = {}
         self.saved = 0
         self.last_saved = None
+        self.mqtt_connected = False
 
     # ------------------------------------------------------------ camera
     def read_loop(self):
@@ -263,6 +273,8 @@ class Station:
                 "streak": {"label": self.streak_label, "count": self.streak, "needed": EVENT_FRAMES},
                 "settings": {"eventFrames": EVENT_FRAMES, "eventConfidence": EVENT_CONFIDENCE,
                              "eventCooldownS": EVENT_COOLDOWN_S, "predictEveryS": PREDICT_EVERY_S},
+                "mqtt": {"enabled": MQTT_ENABLED, "connected": self.mqtt_connected,
+                         "commandTopic": f"{MQTT_PREFIX}/command" if MQTT_ENABLED else None},
                 "saved": self.saved,
                 "lastSaved": {k: v for k, v in self.last_saved.items() if k != "time"} if self.last_saved else None,
             }
@@ -276,6 +288,47 @@ class Station:
             if jpeg is None:
                 continue
             yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + jpeg + b"\r\n"
+
+
+def start_mqtt(station: Station):
+    """Subscribes to PREFIX/command. {"command": "SNAPSHOT", "device": "..."} saves the current frame."""
+    if not MQTT_ENABLED:
+        return None
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"catsdogs-station-{uuid.uuid4().hex[:8]}")
+    status_topic = f"{MQTT_PREFIX}/station/status"
+    client.will_set(status_topic, json.dumps({"camera": CAMERA_NAME, "status": "offline"}), retain=True)
+
+    def on_connect(c, userdata, flags, reason_code, properties):
+        station.mqtt_connected = not reason_code.is_failure
+        if station.mqtt_connected:
+            c.subscribe(f"{MQTT_PREFIX}/command")
+            c.publish(status_topic, json.dumps({"camera": CAMERA_NAME, "status": "online"}), retain=True)
+            print(f"MQTT connected to {MQTT_HOST}:{MQTT_PORT}, listening on {MQTT_PREFIX}/command")
+
+    def on_disconnect(c, userdata, flags, reason_code, properties):
+        station.mqtt_connected = False
+
+    def on_message(c, userdata, msg):
+        try:
+            command = json.loads(msg.payload)
+        except ValueError:
+            print("Ignoring non-JSON command:", msg.payload[:100])
+            return
+        if not isinstance(command, dict) or command.get("command") != "SNAPSHOT":
+            return
+        with station.lock:
+            frame = station.frame
+        if frame is None:
+            return
+        device = str(command.get("device", "unknown"))[:40]
+        print(f"SNAPSHOT requested by {device}")
+        # Saving calls the backend over HTTP; do it in another thread so MQTT is never blocked.
+        threading.Thread(target=station.save, args=(frame, "remote"), kwargs={"requestedBy": device}, daemon=True).start()
+
+    client.on_connect, client.on_disconnect, client.on_message = on_connect, on_disconnect, on_message
+    client.connect_async(MQTT_HOST, MQTT_PORT, keepalive=30)
+    client.loop_start()
+    return client
 
 
 def create_app(station: Station) -> Flask:
@@ -314,5 +367,6 @@ if __name__ == "__main__":
     station = Station()
     threading.Thread(target=station.read_loop, daemon=True).start()
     threading.Thread(target=station.predict_loop, daemon=True).start()
+    start_mqtt(station)
     print(f"Camera: {safe_url(CAMERA_URL)} | Backend: {API_URL} | Stream: http://0.0.0.0:{STATION_PORT}/video")
     create_app(station).run(host="0.0.0.0", port=STATION_PORT, threaded=True)

@@ -41,9 +41,28 @@ def storage():
 
 
 @pytest.fixture(scope="session")
-def client(storage):
+def client(storage, publisher):
     model = ModelService(config.MODEL_DIR, config.UNCERTAIN_THRESHOLD)
-    return create_app(model, storage).test_client()
+    return create_app(model, storage, publisher).test_client()
+
+
+class FakePublisher:
+    """Records what the API would publish to MQTT, without a broker."""
+
+    def __init__(self):
+        self.published = []
+
+    def publish_prediction(self, prediction_id, prediction, metadata):
+        self.published.append({"id": prediction_id, "label": prediction["label"], "client": metadata.get("client")})
+        return True
+
+    def status(self):
+        return {"enabled": True, "connected": True}
+
+
+@pytest.fixture(scope="session")
+def publisher():
+    return FakePublisher()
 
 
 def test_health(client):
@@ -120,3 +139,15 @@ def test_bad_requests(client, payload, message):
 def test_not_found(client):
     assert client.get("/api/predictions/nope").status_code == 404
     assert client.get("/api/images/000000000000000000000000").status_code == 404
+
+
+def test_mqtt_publishes_only_stored_predictions(client, publisher):
+    publisher.published.clear()
+    image = tile_b64(TILES["cat"][0])
+    client.post("/api/predict", json={"image": image, "metadata": {"client": "ipcamera", "source": "stream"}, "store": False})
+    assert publisher.published == []  # live frames are not announced
+
+    body = client.post("/api/predict", json={"image": image, "metadata": {"client": "ipcamera", "source": "stream"}}).get_json()
+    assert publisher.published == [{"id": body["id"], "label": "cat", "client": "ipcamera"}]
+    assert client.get("/api/health").get_json()["mqtt"]["connected"] is True
+    client.delete(f"/api/predictions/{body['id']}")

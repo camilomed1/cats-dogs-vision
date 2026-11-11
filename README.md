@@ -24,6 +24,7 @@ University computer-vision project: a cats vs dogs image classifier built with *
 | `desktop/` | Python PySide6 client: webcam (live) + files | ✅ |
 | `mobile/` | React Native (Expo) client: camera + gallery | ✅ |
 | `camera_station/` | Python client for IP cameras (Tapo/RTSP, HTTP, webcam): live prediction, detection events, MJPEG stream | ✅ |
+| `iot/` | MQTT: virtual ESP32 (and later the real ESP32 firmware) that reacts to predictions and sends commands | ✅ |
 
 ## API contract
 
@@ -201,6 +202,41 @@ What it does:
 - Reconnects automatically if the RTSP stream drops. The camera password is removed from the URL before it is shown or stored.
 
 The web client's **IP Camera** tab shows the live video, the current prediction and the saved detections.
+
+## 7. MQTT and the ESP32 (IoT)
+
+The backend publishes every **stored** prediction (from any client) to an MQTT broker, and the camera station listens
+for commands. This lets an ESP32 react to predictions and trigger the camera, using the same `PubSubClient` +
+`ArduinoJson` approach as the class examples.
+
+```
+camera / phone / web / desktop --> backend --MQTT--> PREFIX/prediction --> ESP32: LED (green dog, blue cat, yellow uncertain)
+ESP32 button --MQTT--> PREFIX/command {"command":"SNAPSHOT"} --> camera station saves a photo
+```
+
+| Topic | Published by | Payload |
+|---|---|---|
+| `PREFIX/prediction` | backend | `{"id","label","confidence","client","source","mode","at"}` |
+| `PREFIX/command` | ESP32 / virtual ESP32 | `{"command":"SNAPSHOT","device":"..."}` |
+| `PREFIX/esp32/status` | ESP32 / virtual ESP32 | `{"device","message","number"}` every 5 s (like the class example) |
+| `PREFIX/backend/status`, `PREFIX/station/status` | backend, camera station | `online` / `offline` (retained, with Last Will) |
+
+Defaults: broker `broker.emqx.io:1883`, `PREFIX = catsdogs-vision/camilomed1` (change them with `MQTT_HOST` / `MQTT_PREFIX`
+in each component's `.env`; use the same values everywhere). The public broker needs no installation and works on the
+university network, but anyone who knows the prefix can read the messages, so only small JSON is sent, never images.
+For a private broker, install Mosquitto and set `MQTT_HOST=<pc-ip>`. If the broker is unreachable, predictions keep working.
+
+### Virtual ESP32 (no hardware needed)
+
+```powershell
+cd iot
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\python virtual_esp32.py
+```
+
+It prints which LED the real board would turn on for each prediction, publishes the heartbeat, and pressing **Enter**
+"presses the button" (sends `SNAPSHOT` to the camera station).
 
 ### Backend tests
 
