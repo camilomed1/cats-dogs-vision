@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "../api.js";
 import Prediction from "./Prediction.jsx";
 
-const CLIENTS = ["", "web", "desktop", "mobile"];
+const CLIENTS = ["", "web", "desktop", "mobile", "ipcamera"];
 const LABELS = ["", "cat", "dog", "uncertain"];
 
 export default function HistoryPanel() {

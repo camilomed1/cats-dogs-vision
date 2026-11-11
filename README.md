@@ -23,6 +23,7 @@ University computer-vision project: a cats vs dogs image classifier built with *
 | `web/` | React (Vite) client: file upload + live webcam | ✅ |
 | `desktop/` | Python PySide6 client: webcam (live) + files | ✅ |
 | `mobile/` | React Native (Expo) client: camera + gallery | ✅ |
+| `camera_station/` | Python client for IP cameras (Tapo/RTSP, HTTP, webcam): live prediction, detection events, MJPEG stream | ✅ |
 
 ## API contract
 
@@ -171,6 +172,35 @@ Scan the QR code with the iPhone camera, which opens it in Expo Go. The app auto
 - **Camera**: *Take photo and save* stores the photo; *Start live* classifies a silent low-quality photo about once per second without storing it; *Flip* switches cameras.
 - **Gallery**: pick a photo from the library (HEIC photos are converted to JPEG). Metadata includes EXIF date and camera model when available.
 - **History**: same data as the other clients, label filters, pull to refresh, tap for details and delete.
+
+## 6. IP camera station (Tapo / RTSP)
+
+A Python client that watches a camera stream, like the professor's Tapo example (`cv2.VideoCapture(url, cv2.CAP_FFMPEG)`
++ MJPEG over Flask), and classifies it live with the backend.
+
+```powershell
+cd camera_station
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+copy .env.example .env      # then edit CAMERA_URL
+.venv\Scripts\python station.py
+```
+
+`CAMERA_URL` can be:
+- a Tapo / RTSP camera: `rtsp://USER:PASSWORD@<camera-ip>:554/stream2` (the camera account is created in the Tapo app,
+  *Advanced settings > Camera account*; `stream2` is the lower-quality stream, faster to process),
+- an HTTP MJPEG camera (e.g. a phone camera app): `http://<phone-ip>:8080/video`,
+- the laptop webcam: `0`,
+- a video file, for testing without a camera.
+
+What it does:
+- Sends a frame to the backend about 3 times per second (`client: "ipcamera"`, `store: false`) and draws the result on the video.
+- **Detection events**: when the same animal is seen with at least 90% confidence in 3 predictions in a row, it saves
+  one snapshot to MongoDB (`mode: "event"`). It saves once per appearance, at most every 15 s per animal (configurable in `.env`).
+- Serves the labeled video at `http://<pc>:5001/video` (MJPEG), its status at `/status`, and `POST /snapshot` saves the current frame.
+- Reconnects automatically if the RTSP stream drops. The camera password is removed from the URL before it is shown or stored.
+
+The web client's **IP Camera** tab shows the live video, the current prediction and the saved detections.
 
 ### Backend tests
 

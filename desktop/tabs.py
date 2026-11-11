@@ -341,7 +341,7 @@ class HistoryTab(QWidget):
 
         self.client_filter = QComboBox()
         self.client_filter.addItem("All clients", "")
-        for c in ("web", "desktop", "mobile"):
+        for c in ("web", "desktop", "mobile", "ipcamera"):
             self.client_filter.addItem(f"Client: {c}", c)
         self.client_filter.currentIndexChanged.connect(self.refresh)
 

@@ -18,8 +18,8 @@ from storage import Storage
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("api")
 
-KNOWN_CLIENTS = {"mobile", "web", "desktop"}
-KNOWN_SOURCES = {"camera", "gallery", "file", "webcam"}
+KNOWN_CLIENTS = {"mobile", "web", "desktop", "ipcamera"}
+KNOWN_SOURCES = {"camera", "gallery", "file", "webcam", "stream"}
 PIL_TO_MIME = {"JPEG": "image/jpeg", "PNG": "image/png", "BMP": "image/bmp", "GIF": "image/gif", "WEBP": "image/webp"}
 DATA_URL_RE = re.compile(r"^data:(?P<mime>[\w/+.-]+);base64,")
 

@@ -60,7 +60,7 @@ button.link { border: none; background: none; color: #0645ad; text-decoration: u
 /* Webcam */
 .webcam { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
 .video-wrap { position: relative; background: #222; aspect-ratio: 16 / 9; }
-.video-wrap video { width: 100%; height: 100%; object-fit: contain; display: block; }
+.video-wrap video, .video-wrap img.stream { width: 100%; height: 100%; object-fit: contain; display: block; }
 .video-wrap video.hidden { display: none; }
 .video-placeholder { position: absolute; inset: 0; display: grid; place-content: center; color: #bbb; }
 .overlay { position: absolute; left: 10px; bottom: 10px; width: 240px; padding: 8px; background: #fff; border: 1px solid #999; }

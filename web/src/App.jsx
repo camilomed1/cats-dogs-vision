@@ -3,10 +3,12 @@ import { api } from "./api.js";
 import UploadPanel from "./components/UploadPanel.jsx";
 import WebcamPanel from "./components/WebcamPanel.jsx";
 import HistoryPanel from "./components/HistoryPanel.jsx";
+import IpCameraPanel from "./components/IpCameraPanel.jsx";
 
 const TABS = [
   { id: "upload", label: "Upload" },
   { id: "webcam", label: "Webcam" },
+  { id: "ipcamera", label: "IP Camera" },
   { id: "history", label: "History" },
 ];
 
@@ -49,6 +51,7 @@ export default function App() {
       <main>
         {tab === "upload" && <UploadPanel />}
         {tab === "webcam" && <WebcamPanel />}
+        {tab === "ipcamera" && <IpCameraPanel />}
         {tab === "history" && <HistoryPanel />}
       </main>
     </div>
