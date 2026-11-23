@@ -14,6 +14,12 @@ University computer-vision project: a cats vs dogs image classifier built with *
           camera/gallery  files/webcam  webcam/files
 ```
 
+## Quick start (demo)
+
+Double-click **`start_demo.bat`** to start the backend, web client, camera station, virtual ESP32 and Expo, each in its
+own window (options: `-Camera webcam|video`, `-WebSockets`, `-Hotspot`, `-Desktop`, `-NoMobile`).
+See **[DEMO.md](DEMO.md)** for the lab checklist and troubleshooting.
+
 ## Structure
 
 | Folder | Description | Status |

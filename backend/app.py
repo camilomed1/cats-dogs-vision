@@ -138,7 +138,8 @@ def create_app(model: ModelService, storage: Storage, publisher: MqttPublisher |
 
 if __name__ == "__main__":
     log.info("Loading model from %s ...", config.MODEL_DIR)
-    publisher = MqttPublisher(config.MQTT_HOST, config.MQTT_PORT, config.MQTT_PREFIX, config.MQTT_ENABLED)
+    publisher = MqttPublisher(config.MQTT_HOST, config.MQTT_PORT, config.MQTT_PREFIX, config.MQTT_ENABLED,
+                              config.MQTT_TRANSPORT)
     app = create_app(ModelService(config.MODEL_DIR, config.UNCERTAIN_THRESHOLD),
                      Storage(config.MONGO_URI, config.MONGO_DB), publisher)
     try:

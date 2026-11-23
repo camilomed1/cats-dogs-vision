@@ -26,6 +26,7 @@ load_dotenv(Path(__file__).resolve().parent / ".env")
 MQTT_HOST = os.getenv("MQTT_HOST", "broker.emqx.io")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_PREFIX = os.getenv("MQTT_PREFIX", "catsdogs-vision/camilomed1").rstrip("/")
+MQTT_TRANSPORT = os.getenv("MQTT_TRANSPORT", "tcp")  # or "websockets" (port 8083) if port 1883 is blocked
 DEVICE = os.getenv("DEVICE_NAME", "virtual-ESP32")
 
 TOPIC_PREDICTION = f"{MQTT_PREFIX}/prediction"
@@ -88,7 +89,10 @@ def heartbeat(client):
 
 def main():
     global running
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"{DEVICE}-{uuid.uuid4().hex[:6]}")
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"{DEVICE}-{uuid.uuid4().hex[:6]}",
+                         transport=MQTT_TRANSPORT)
+    if MQTT_TRANSPORT == "websockets":
+        client.ws_set_options(path="/mqtt")
     client.on_connect = on_connect
     client.on_message = on_message
     log(f"Connecting to MQTT broker {MQTT_HOST}:{MQTT_PORT} (prefix {MQTT_PREFIX})...")

@@ -17,12 +17,16 @@ log = logging.getLogger("mqtt")
 
 
 class MqttPublisher:
-    def __init__(self, host: str, port: int, prefix: str, enabled: bool = True):
+    def __init__(self, host: str, port: int, prefix: str, enabled: bool = True, transport: str = "tcp"):
         self.host, self.port, self.prefix, self.enabled = host, port, prefix.rstrip("/"), enabled
         self.connected = False
         if not enabled:
             return
-        self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"catsdogs-backend-{uuid.uuid4().hex[:8]}")
+        self.transport = transport
+        self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"catsdogs-backend-{uuid.uuid4().hex[:8]}",
+                                  transport=transport)
+        if transport == "websockets":
+            self.client.ws_set_options(path="/mqtt")
         self.client.on_connect = self._on_connect
         self.client.on_disconnect = self._on_disconnect
         # Last Will: the broker publishes this by itself if the backend disconnects without saying goodbye.
@@ -59,8 +63,8 @@ class MqttPublisher:
         return True
 
     def status(self) -> dict:
-        return {"enabled": self.enabled, "connected": self.connected,
-                "broker": f"{self.host}:{self.port}", "prefix": self.prefix}
+        return {"enabled": self.enabled, "connected": self.connected, "broker": f"{self.host}:{self.port}",
+                "transport": getattr(self, "transport", None), "prefix": self.prefix}
 
     def close(self):
         if self.enabled:

@@ -31,6 +31,10 @@ from flask_cors import CORS
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
+# RTSP over TCP instead of UDP: more reliable on university / Wi-Fi networks (UDP packets are often dropped or blocked).
+# Must be set before the first cv2.VideoCapture.
+os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp")
+
 CAMERA_URL = os.getenv("CAMERA_URL", "0")
 CAMERA_NAME = os.getenv("CAMERA_NAME", "IP camera")
 API_URL = os.getenv("API_URL", "http://127.0.0.1:5000").rstrip("/")
@@ -45,6 +49,7 @@ MQTT_ENABLED = os.getenv("MQTT_ENABLED", "true").lower() == "true"
 MQTT_HOST = os.getenv("MQTT_HOST", "broker.emqx.io")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_PREFIX = os.getenv("MQTT_PREFIX", "catsdogs-vision/camilomed1").rstrip("/")
+MQTT_TRANSPORT = os.getenv("MQTT_TRANSPORT", "tcp")  # or "websockets" (port 8083) if port 1883 is blocked
 
 IS_FILE = os.path.isfile(CAMERA_URL)
 NAMES = {"cat": "Cat", "dog": "Dog", "uncertain": "Uncertain"}
@@ -63,7 +68,9 @@ def open_capture(url: str):
     if url.isdigit():  # local webcam index
         cap = cv2.VideoCapture(int(url), cv2.CAP_DSHOW if os.name == "nt" else cv2.CAP_ANY)
     else:              # rtsp://, http://, or a video file
-        cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
+        # Timeouts: a wrong IP fails after a few seconds instead of hanging for ~30 s.
+        cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG, [cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 8000,
+                                                   cv2.CAP_PROP_READ_TIMEOUT_MSEC, 8000])
     cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # keep only the newest frame (less delay on RTSP)
     return cap
 
@@ -294,7 +301,10 @@ def start_mqtt(station: Station):
     """Subscribes to PREFIX/command. {"command": "SNAPSHOT", "device": "..."} saves the current frame."""
     if not MQTT_ENABLED:
         return None
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"catsdogs-station-{uuid.uuid4().hex[:8]}")
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=f"catsdogs-station-{uuid.uuid4().hex[:8]}",
+                         transport=MQTT_TRANSPORT)
+    if MQTT_TRANSPORT == "websockets":
+        client.ws_set_options(path="/mqtt")
     status_topic = f"{MQTT_PREFIX}/station/status"
     client.will_set(status_topic, json.dumps({"camera": CAMERA_NAME, "status": "offline"}), retain=True)
 

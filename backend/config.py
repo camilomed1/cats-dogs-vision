@@ -25,3 +25,5 @@ MQTT_ENABLED = os.getenv("MQTT_ENABLED", "true").lower() == "true"
 MQTT_HOST = os.getenv("MQTT_HOST", "broker.emqx.io")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_PREFIX = os.getenv("MQTT_PREFIX", "catsdogs-vision/camilomed1")
+# "tcp" (port 1883) or "websockets" (port 8083 on broker.emqx.io): use websockets if a network blocks port 1883.
+MQTT_TRANSPORT = os.getenv("MQTT_TRANSPORT", "tcp")
