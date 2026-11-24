@@ -23,12 +23,17 @@
     "plugins": [
       [
         "expo-camera",
-        { "cameraPermission": "The camera is used to take photos of cats and dogs to classify them." }
+        {
+          "cameraPermission": "The camera is used to take photos of cats and dogs to classify them."
+        }
       ],
       [
         "expo-image-picker",
-        { "photosPermission": "Your photos are used to classify cats and dogs." }
-      ]
+        {
+          "photosPermission": "Your photos are used to classify cats and dogs."
+        }
+      ],
+      "expo-status-bar"
     ]
   }
 }
