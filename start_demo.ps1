@@ -1,6 +1,6 @@
 <#
 Starts the whole demo, each part in its own window:
-  1 Backend (Flask + model + MongoDB + MQTT)   2 Web client   3 Camera station   4 Virtual ESP32   5 Mobile (Expo)
+  1 Backend (Flask + model + MongoDB + MQTT)   2 Web client   3 Camera station   4 Virtual ESP32   5 Mobile (Expo)   6 Desktop app
 
 Usage (double-click start_demo.bat, or from PowerShell):
   .\start_demo.bat                      lab camera from camera_station\.env
@@ -8,7 +8,7 @@ Usage (double-click start_demo.bat, or from PowerShell):
   .\start_demo.bat -Camera video        test video (no camera needed)
   .\start_demo.bat -WebSockets          MQTT over WebSockets (if the network blocks port 1883)
   .\start_demo.bat -Hotspot             phone connected to the laptop's Mobile Hotspot (Expo uses 192.168.137.1)
-  .\start_demo.bat -Desktop             also open the desktop app
+  .\start_demo.bat -NoDesktop           do not open the desktop app
   .\start_demo.bat -NoMobile            do not start Expo
 Close a window (or press Ctrl+C in it) to stop that part.
 #>
@@ -16,7 +16,7 @@ param(
     [ValidateSet("lab", "webcam", "video")] [string]$Camera = "lab",
     [switch]$WebSockets,
     [switch]$Hotspot,
-    [switch]$Desktop,
+    [switch]$NoDesktop,
     [switch]$NoMobile,
     [switch]$DryRun
 )
@@ -60,7 +60,7 @@ if ($Camera -eq "lab") {
     Start-Part "3 Camera station" "camera_station" "$mqtt$cameraEnv.venv\Scripts\python station.py"
 }
 Start-Part "4 Virtual ESP32" "iot" "$mqtt.venv\Scripts\python virtual_esp32.py"
-if ($Desktop) { Start-Part "6 Desktop app" "desktop" ".venv\Scripts\python main.py" }
+if (-not $NoDesktop) { Start-Part "6 Desktop app" "desktop" ".venv\Scripts\python main.py" }
 if (-not $NoMobile) {
     $expoHost = ""
     if ($Hotspot) { $expoHost = "`$env:REACT_NATIVE_PACKAGER_HOSTNAME = '192.168.137.1'; " }

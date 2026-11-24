@@ -11,7 +11,7 @@
 1. Connect the laptop to the **same network as the camera** (the camera is at `192.168.210.6`, so the laptop
    should get an address like `192.168.210.x`).
 2. Double-click **`start_demo.bat`**. It opens: `1 Backend`, `2 Web`, `3 Camera station`, `4 Virtual ESP32`,
-   `5 Mobile (Expo)`, and the browser at http://localhost:5173 after about 12 seconds.
+   `5 Mobile (Expo)`, `6 Desktop app`, and the browser at http://localhost:5173 after about 12 seconds.
 3. Look at window **3 Camera station**: it first runs the camera check.
    - `OK, the camera answers on the network` and then `OK: <width>x<height>, about N fps` means everything is fine.
    - If it fails, see the table below.
@@ -45,7 +45,7 @@ Options can be combined, e.g. `start_demo.bat -WebSockets -Hotspot`.
 3. **Web** (http://localhost:5173): Upload, Webcam, **IP Camera** (lab Tapo live with the label drawn on it), History
    (click an image to show the metadata and the GridFS info).
 4. **Mobile** (iPhone): Camera (photo + live), Gallery, History.
-5. **Desktop app** (optional): `start_demo.bat -Desktop`, or `cd desktop` then `.venv\Scripts\python main.py`.
+5. **Desktop app**: opens with `start_demo.bat` (window "Cats vs Dogs"); skip it with `-NoDesktop`.
 6. **IP camera + MQTT + ESP32**: show a cat/dog photo to the Tapo, hold it 2 s: the station saves an *event* and window
    **4 Virtual ESP32** prints `... LED ON`. Then press **Enter** in window 4: the camera saves a *remote* snapshot.
    Uploading a photo from the web or phone also reaches the ESP32 (it reacts to every client).
