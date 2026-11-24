@@ -1,6 +1,6 @@
 <#
 Starts the whole demo, each part in its own window:
-  1 Backend (Flask + model + MongoDB + MQTT)   2 Web client   3 Camera station   4 Virtual ESP32   5 Mobile (Expo)   6 Desktop app
+  1 Backend (Flask + model + MongoDB)   2 Web client   3 Camera station   4 Mobile (Expo)   5 Desktop app
 
 Usage (double-click start_demo.bat, or from PowerShell):
   .\start_demo.bat                      lab camera from camera_station\.env
@@ -59,12 +59,11 @@ if ($Camera -eq "lab") {
 } else {
     Start-Part "3 Camera station" "camera_station" "$mqtt$cameraEnv.venv\Scripts\python station.py"
 }
-Start-Part "4 Virtual ESP32" "iot" "$mqtt.venv\Scripts\python virtual_esp32.py"
-if (-not $NoDesktop) { Start-Part "6 Desktop app" "desktop" ".venv\Scripts\python main.py" }
+if (-not $NoDesktop) { Start-Part "5 Desktop app" "desktop" ".venv\Scripts\python main.py" }
 if (-not $NoMobile) {
     $expoHost = ""
     if ($Hotspot) { $expoHost = "`$env:REACT_NATIVE_PACKAGER_HOSTNAME = '192.168.137.1'; " }
-    Start-Part "5 Mobile (Expo)" "mobile" "${expoHost}npx expo start"
+    Start-Part "4 Mobile (Expo)" "mobile" "${expoHost}npx expo start"
 }
 
 if (-not $DryRun) {
